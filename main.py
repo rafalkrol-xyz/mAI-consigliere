@@ -1,7 +1,10 @@
 import os
 import logging
+
 from strands import Agent
 from strands.telemetry import StrandsTelemetry
+
+from agents_consigliere import CONSIGLIERE_AGENT_PROMPT
 
 # When LOG_LEVEL is unset (that's the default behavior, no logs are written
 log_level = os.getenv("LOG_LEVEL")
@@ -26,11 +29,10 @@ logging.basicConfig(
 os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://localhost:4318"
 StrandsTelemetry().setup_otlp_exporter()
 
-CONSIGLIERE_AGENT_PROMPT = """
-TODO
-"""
-
-consigliere = Agent()
+consigliere = Agent(
+    system_prompt=CONSIGLIERE_AGENT_PROMPT,
+    callback_handler=None,
+)
 
 if __name__ == "__main__":
     print(
