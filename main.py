@@ -4,7 +4,7 @@ import logging
 from strands import Agent
 from strands.telemetry import StrandsTelemetry
 
-from agents_consigliere import CONSIGLIERE_AGENT_PROMPT
+from agents_consigliere import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 
 # When LOG_LEVEL is unset (that's the default behavior, no logs are written
 log_level = os.getenv("LOG_LEVEL")
@@ -26,12 +26,24 @@ logging.basicConfig(
 #   otel/opentelemetry-collector:0.144.0 \
 #   2>&1
 # ```
-os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://localhost:4318"
-StrandsTelemetry().setup_otlp_exporter()
+#
+# Set the OTEL_EXPORTER_OTLP_ENDPOINT environment variable when starting the app to setup OTeL,
+# ```bash
+# OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 uv run main.py
+# ```
+# TODO: create a dotenv file for all the env vars
+
+if not os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    logger.info("OTEL_EXPORTER_OTLP_ENDPOINT not set, skipping OTLP setup")
+else:
+    logger.info("Setting up OTLP exporter")
+    os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://localhost:4318"
+    StrandsTelemetry().setup_otlp_exporter()
 
 consigliere = Agent(
     system_prompt=CONSIGLIERE_AGENT_PROMPT,
     callback_handler=None,
+    model=CONSIGLIERE_MODEL,
 )
 
 if __name__ == "__main__":
