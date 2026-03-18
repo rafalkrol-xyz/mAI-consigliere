@@ -1,5 +1,17 @@
 """Configuration for the mAI Consigliere agent."""
 
+from strands.models import BedrockModel
+
+CONSIGLIERE_MODEL = BedrockModel(
+  # eu.anthropic.claude-opus-4-6-v1
+  # eu.anthropic.claude-sonnet-4-6
+  # eu.anthropic.claude-haiku-4-5-20251001-v1:0
+  # eu.amazon.nova-2-lite-v1:0
+  # qwen.qwen3-235b-a22b-2507-v1:0
+  # qwen.qwen3-coder-30b-a3b-v1:0
+  model_id="eu.amazon.nova-2-lite-v1:0"
+)
+
 CONSIGLIERE_AGENT_PROMPT = """
 You are the **mAI Consigliere**, a strategic advisor and trusted counsel for a CTO. Your role is to provide 
 direct, actionable guidance on strategic planning, roadmapping, and technical leadership decisions.
