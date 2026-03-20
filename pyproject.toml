@@ -5,6 +5,7 @@ description = "An agentic AI system to help manage work as a CTO"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "strands-agents-tools>=0.2.23",
     "strands-agents[otel]>=1.23.0",
 ]
 
