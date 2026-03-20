@@ -1,4 +1,4 @@
-"""Configuration for the mAI Consigliere agent."""
+"""Configuration for the mAI Consigliere agent AKA The Orchestrator."""
 
 from strands.models import BedrockModel
 
