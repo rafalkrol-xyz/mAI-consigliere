@@ -4,7 +4,7 @@ import logging
 from strands import Agent
 from strands.telemetry import StrandsTelemetry
 
-from agents_consigliere import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
+from agents.consigliere import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 
 # When LOG_LEVEL is unset (that's the default behavior, no logs are written
 log_level = os.getenv("LOG_LEVEL")
