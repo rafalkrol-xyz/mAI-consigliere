@@ -3,13 +3,13 @@
 from strands.models import BedrockModel
 
 CONSIGLIERE_MODEL = BedrockModel(
-  # eu.anthropic.claude-opus-4-6-v1
-  # eu.anthropic.claude-sonnet-4-6
-  # eu.anthropic.claude-haiku-4-5-20251001-v1:0
-  # eu.amazon.nova-2-lite-v1:0
-  # qwen.qwen3-235b-a22b-2507-v1:0
-  # qwen.qwen3-coder-30b-a3b-v1:0
-  model_id="eu.anthropic.claude-sonnet-4-6"
+    # eu.anthropic.claude-opus-4-6-v1
+    # eu.anthropic.claude-sonnet-4-6
+    # eu.anthropic.claude-haiku-4-5-20251001-v1:0
+    # eu.amazon.nova-2-lite-v1:0
+    # qwen.qwen3-235b-a22b-2507-v1:0
+    # qwen.qwen3-coder-30b-a3b-v1:0
+    model_id="eu.anthropic.claude-sonnet-4-6"
 )
 
 CONSIGLIERE_AGENT_PROMPT = """
