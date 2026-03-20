@@ -9,7 +9,7 @@ CONSIGLIERE_MODEL = BedrockModel(
   # eu.amazon.nova-2-lite-v1:0
   # qwen.qwen3-235b-a22b-2507-v1:0
   # qwen.qwen3-coder-30b-a3b-v1:0
-  model_id="eu.amazon.nova-2-lite-v1:0"
+  model_id="eu.anthropic.claude-sonnet-4-6"
 )
 
 CONSIGLIERE_AGENT_PROMPT = """
