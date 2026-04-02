@@ -10,6 +10,8 @@ from mcp.client.streamable_http import streamablehttp_client
 from strands.tools.mcp import MCPClient
 
 _CLIENT_ID = "178c6fc778ccc68e1d6a"  # GitHub CLI's public client_id
+# TODO: use the keyring library to avoid storing the token in plain text
+# https://pypi.org/project/keyring/
 _TOKEN_FILE = Path.home() / ".config" / "mai-consigliere" / "github_token"
 
 
