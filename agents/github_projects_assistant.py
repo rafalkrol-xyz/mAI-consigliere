@@ -6,7 +6,7 @@ from pathlib import Path
 import httpx
 from strands import Agent, tool
 
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
 
 _CLIENT_ID = "178c6fc778ccc68e1d6a"  # GitHub CLI's public client_id
@@ -66,9 +66,9 @@ Always be concise and factual. Only report what the data shows.
 
 _github_token = _get_github_token()
 github_mcp_client = MCPClient(
-    lambda: streamablehttp_client(
+    lambda: streamable_http_client(
         url="https://api.githubcopilot.com/mcp/",
-        headers={"Authorization": f"Bearer {_github_token}"},
+        http_client=httpx.AsyncClient(headers={"Authorization": f"Bearer {_github_token}"}),
     )
 )
 
