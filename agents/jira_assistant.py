@@ -56,7 +56,7 @@ async def _local_callback() -> tuple[str, str | None]:
     from urllib.parse import parse_qs, urlparse
 
     result: dict = {}
-    server_ready = asyncio.Event()
+    done = asyncio.Event()
 
     async def handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         data = await reader.read(4096)
@@ -68,12 +68,11 @@ async def _local_callback() -> tuple[str, str | None]:
         writer.write(b"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>Authenticated! You can close this tab.</h1>")
         await writer.drain()
         writer.close()
-        server.close()
+        done.set()
 
     server = await asyncio.start_server(handle, "localhost", 9876)
-    server_ready.set()
     async with server:
-        await server.serve_forever()
+        await done.wait()
 
     return result["code"], result.get("state")
 
