@@ -42,9 +42,6 @@ class _FileTokenStorage:
         self._data["client_info"] = client_info.model_dump(mode="json")
         self._save()
 
-TokenStorage.register(_FileTokenStorage)
-
-
 async def _open_browser(url: str) -> None:
     print(f"\nOpening browser for Atlassian login...\nIf it doesn't open, visit:\n  {url}\n")
     webbrowser.open(url)
