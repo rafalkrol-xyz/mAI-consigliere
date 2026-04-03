@@ -7,6 +7,7 @@ from strands.telemetry import StrandsTelemetry
 from agents.consigliere import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 from agents.korean_assistant import korean_assistant
 from agents.github_projects_assistant import github_projects_assistant
+from agents.jira_assistant import jira_assistant
 
 # When LOG_LEVEL is unset (that's the default behavior, no logs are written
 log_level = os.getenv("LOG_LEVEL")
@@ -46,7 +47,11 @@ consigliere = Agent(
     system_prompt=CONSIGLIERE_AGENT_PROMPT,
     callback_handler=None,
     model=CONSIGLIERE_MODEL,
-    tools=[korean_assistant, github_projects_assistant],
+    tools=[
+        korean_assistant,
+        github_projects_assistant,
+        jira_assistant,
+        ],
 )
 
 if __name__ == "__main__":
