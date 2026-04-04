@@ -51,7 +51,7 @@ consigliere = Agent(
         korean_assistant,
         github_projects_assistant,
         jira_assistant,
-        ],
+    ],
 )
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import json
 
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
+
 class _FileTokenStorage:
     """Persist OAuth tokens and client registration to disk."""
 

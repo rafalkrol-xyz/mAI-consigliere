@@ -12,7 +12,9 @@ from auth.storage import _FileTokenStorage
 from auth.callback import _local_callback, _open_browser
 
 _ROVO_MCP_URL = "https://mcp.atlassian.com/v1/mcp"
-_TOKEN_FILE = Path.home() / ".config" / "mai-consigliere" / "jira_oauth.json" # TODO: use platformdirs so it works other OSs, too
+_TOKEN_FILE = (
+    Path.home() / ".config" / "mai-consigliere" / "jira_oauth.json"
+)  # TODO: use platformdirs so it works other OSs, too
 _REDIRECT_URI = "http://localhost:9876/callback"
 
 

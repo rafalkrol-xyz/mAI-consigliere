@@ -30,14 +30,20 @@ def _get_github_token() -> str:
     r.raise_for_status()
     data = r.json()
 
-    print(f"\nOpen https://github.com/login/device and enter code: {data['user_code']}\n")
+    print(
+        f"\nOpen https://github.com/login/device and enter code: {data['user_code']}\n"
+    )
 
     interval = data.get("interval", 5)
     while True:
         time.sleep(interval)
         poll = httpx.post(
             "https://github.com/login/oauth/access_token",
-            data={"client_id": _CLIENT_ID, "device_code": data["device_code"], "grant_type": "urn:ietf:params:oauth:grant-type:device_code"},
+            data={
+                "client_id": _CLIENT_ID,
+                "device_code": data["device_code"],
+                "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+            },
             headers={"Accept": "application/json"},
         )
         poll.raise_for_status()
@@ -53,6 +59,7 @@ def _get_github_token() -> str:
         if result.get("error") == "slow_down":
             interval += 5
 
+
 GITHUB_ASSISTANT_SYSTEM_PROMPT = """
 You are a GitHub Assistant. You help answer questions about my private GitHub issues, project and repositories.
 
@@ -66,9 +73,12 @@ _github_token = _get_github_token()
 github_mcp_client = MCPClient(
     lambda: streamable_http_client(
         url="https://api.githubcopilot.com/mcp/",
-        http_client=httpx.AsyncClient(headers={"Authorization": f"Bearer {_github_token}"}),
+        http_client=httpx.AsyncClient(
+            headers={"Authorization": f"Bearer {_github_token}"}
+        ),
     )
 )
+
 
 @tool
 def github_projects_assistant(query: str) -> str:
