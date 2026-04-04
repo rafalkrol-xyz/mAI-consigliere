@@ -6,6 +6,7 @@ from strands import Agent, tool
 from mcp.client.auth import OAuthClientProvider
 from mcp.client.streamable_http import streamable_http_client
 from mcp.shared.auth import OAuthClientMetadata
+from pydantic import AnyUrl
 from strands.tools.mcp import MCPClient
 
 from auth.storage import _FileTokenStorage
@@ -21,7 +22,7 @@ _REDIRECT_URI = "http://localhost:9876/callback"
 _oauth = OAuthClientProvider(
     server_url=_ROVO_MCP_URL,
     client_metadata=OAuthClientMetadata(
-        redirect_uris=[_REDIRECT_URI],  # type: ignore[arg-type]
+        redirect_uris=[AnyUrl(_REDIRECT_URI)],
         client_name="mAI Consigliere",
         grant_types=["authorization_code", "refresh_token"],
         token_endpoint_auth_method="none",
