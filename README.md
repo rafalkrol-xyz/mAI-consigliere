@@ -50,7 +50,6 @@ uv run pytest --cov=. --cov-report=html
 ```
 
 ### Linting & Formatting
-Currently no linting/formatting tools are configured. Recommended setup:
 
 ```bash
 # Add ruff (modern, fast linter and formatter)
