@@ -1,32 +1,36 @@
 from pathlib import Path
-import json
 
+from mcp.client.auth import TokenStorage
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
+from pydantic import BaseModel
 
 
-class FileTokenStorage:
+class _StoredData(BaseModel):
+    tokens: OAuthToken | None = None
+    client_info: OAuthClientInformationFull | None = None
+
+
+class FileTokenStorage(TokenStorage):
     """Persist OAuth tokens and client registration to disk."""
 
     def __init__(self, path: Path) -> None:
         self._path = path
-        self._data: dict = json.loads(path.read_text()) if path.exists() else {}
+        self._data = _StoredData.model_validate_json(path.read_text()) if path.exists() else _StoredData()
 
     def _save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._path.write_text(json.dumps(self._data))
+        self._path.write_text(self._data.model_dump_json())
 
     async def get_tokens(self) -> OAuthToken | None:
-        raw = self._data.get("tokens")
-        return OAuthToken.model_validate(raw) if raw else None
+        return self._data.tokens
 
     async def set_tokens(self, tokens: OAuthToken) -> None:
-        self._data["tokens"] = tokens.model_dump(mode="json")
+        self._data.tokens = tokens
         self._save()
 
     async def get_client_info(self) -> OAuthClientInformationFull | None:
-        raw = self._data.get("client_info")
-        return OAuthClientInformationFull.model_validate(raw) if raw else None
+        return self._data.client_info
 
     async def set_client_info(self, client_info: OAuthClientInformationFull) -> None:
-        self._data["client_info"] = client_info.model_dump(mode="json")
+        self._data.client_info = client_info
         self._save()
