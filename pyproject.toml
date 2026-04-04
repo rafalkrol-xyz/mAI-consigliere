@@ -9,6 +9,10 @@ dependencies = [
     "strands-agents[otel]>=1.23.0",
 ]
 
+[[tool.mypy.overrides]]
+module = "strands_tools"
+ignore_missing_imports = true
+
 [dependency-groups]
 dev = [
     "mypy>=1.20.0",
