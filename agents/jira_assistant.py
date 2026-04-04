@@ -9,8 +9,8 @@ from mcp.shared.auth import OAuthClientMetadata
 from pydantic import AnyUrl
 from strands.tools.mcp import MCPClient
 
-from auth.storage import _FileTokenStorage
-from auth.callback import _local_callback, _open_browser
+from auth.storage import FileTokenStorage
+from auth.callback import local_callback, open_browser
 
 _ROVO_MCP_URL = "https://mcp.atlassian.com/v1/mcp"
 _TOKEN_FILE = (
@@ -27,9 +27,9 @@ _oauth = OAuthClientProvider(
         grant_types=["authorization_code", "refresh_token"],
         token_endpoint_auth_method="none",
     ),
-    storage=_FileTokenStorage(_TOKEN_FILE),
-    redirect_handler=_open_browser,
-    callback_handler=_local_callback,
+    storage=FileTokenStorage(_TOKEN_FILE),
+    redirect_handler=open_browser,
+    callback_handler=local_callback,
 )
 
 _jira_mcp_client = MCPClient(

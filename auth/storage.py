@@ -4,7 +4,7 @@ import json
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 
 
-class _FileTokenStorage:
+class FileTokenStorage:
     """Persist OAuth tokens and client registration to disk."""
 
     def __init__(self, path: Path) -> None:

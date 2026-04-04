@@ -1,14 +1,14 @@
 import webbrowser
 
 
-async def _open_browser(url: str) -> None:
+async def open_browser(url: str) -> None:
     print(
         f"\nOpening browser for Atlassian login...\nIf it doesn't open, visit:\n  {url}\n"
     )
     webbrowser.open(url)
 
 
-async def _local_callback() -> tuple[str, str | None]:
+async def local_callback() -> tuple[str, str | None]:
     """Spin up a one-shot HTTP server to capture the OAuth callback."""
     import asyncio
     from urllib.parse import parse_qs, urlparse
