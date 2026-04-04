@@ -32,7 +32,7 @@ _oauth = OAuthClientProvider(
     callback_handler=_local_callback,
 )
 
-jira_mcp_client = MCPClient(
+_jira_mcp_client = MCPClient(
     lambda: streamable_http_client(
         url=_ROVO_MCP_URL,
         http_client=httpx.AsyncClient(auth=_oauth),
@@ -61,8 +61,8 @@ def jira_assistant(query: str) -> str:
     """
     try:
         print("Routed to Jira Assistant")
-        with jira_mcp_client:
-            tools = jira_mcp_client.list_tools_sync()
+        with _jira_mcp_client:
+            tools = _jira_mcp_client.list_tools_sync()
             agent = Agent(
                 system_prompt=JIRA_ASSISTANT_SYSTEM_PROMPT,
                 tools=tools,

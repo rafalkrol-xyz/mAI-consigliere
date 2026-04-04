@@ -70,7 +70,7 @@ Always be concise and factual. Only report what the data shows.
 
 
 _github_token = _get_github_token()
-github_mcp_client = MCPClient(
+_github_mcp_client = MCPClient(
     lambda: streamable_http_client(
         url="https://api.githubcopilot.com/mcp/",
         http_client=httpx.AsyncClient(
@@ -93,8 +93,8 @@ def github_projects_assistant(query: str) -> str:
     """
     try:
         print("Routed to GitHub Projects Assistant")
-        with github_mcp_client:
-            tools = github_mcp_client.list_tools_sync()
+        with _github_mcp_client:
+            tools = _github_mcp_client.list_tools_sync()
             agent = Agent(
                 system_prompt=GITHUB_ASSISTANT_SYSTEM_PROMPT,
                 tools=tools,
