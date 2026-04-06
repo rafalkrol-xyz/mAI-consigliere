@@ -1,4 +1,9 @@
+import asyncio
 import webbrowser
+from urllib.parse import parse_qs, urlparse
+
+_DEFAULT_PORT = 9876
+_AUTH_TIMEOUT = 120  # seconds
 
 
 async def open_browser(url: str) -> None:
@@ -14,12 +19,25 @@ async def open_browser(url: str) -> None:
     await loop.run_in_executor(None, webbrowser.open, url)
 
 
-async def local_callback() -> tuple[str, str | None]:
-    """Spin up a one-shot HTTP server to capture the OAuth callback."""
-    import asyncio
-    from urllib.parse import parse_qs, urlparse
+async def local_callback(
+    port: int = _DEFAULT_PORT,
+    timeout: float = _AUTH_TIMEOUT,
+) -> tuple[str, str | None]:
+    """Spin up a one-shot HTTP server to capture the OAuth callback.
 
-    result: dict = {}
+    Args:
+        port: Local TCP port to listen on.  Tries the next port if occupied.
+        timeout: Seconds to wait for the callback before giving up.
+
+    Returns:
+        A (code, state) tuple.
+
+    Raises:
+        TimeoutError: If no callback arrives within *timeout* seconds.
+        RuntimeError: If the OAuth provider returned an error parameter or no
+            authorization code was present in the callback URL.
+    """
+    result: dict[str, str | None] = {}
     done = asyncio.Event()
 
     async def handle(
