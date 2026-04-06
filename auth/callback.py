@@ -91,12 +91,8 @@ async def local_callback(
             await writer.wait_closed()
             done.set()
 
-    # Try the requested port; fall back to OS-assigned if it's occupied.
-    try:
-        server = await asyncio.start_server(handle, "127.0.0.1", port)
-    except OSError:
-        server = await asyncio.start_server(handle, "127.0.0.1", 0)
-        port = server.sockets[0].getsockname()[1]
+    # Let OSError propagate if the port is already in use.
+    server = await asyncio.start_server(handle, "127.0.0.1", port)
 
     async with server:
         await server.start_serving()
