@@ -2,9 +2,6 @@ import asyncio
 import webbrowser
 from urllib.parse import parse_qs, urlparse
 
-_DEFAULT_PORT = 9876
-_AUTH_TIMEOUT = 120  # seconds
-
 
 async def open_browser(url: str) -> None:
     """Open the system browser for OAuth login.
@@ -20,8 +17,8 @@ async def open_browser(url: str) -> None:
 
 
 async def local_callback(
-    port: int = _DEFAULT_PORT,
-    timeout: float = _AUTH_TIMEOUT,
+    port: int = 9876,
+    timeout: float = 120, # seconds
 ) -> tuple[str, str | None]:
     """Spin up a one-shot HTTP server to capture the OAuth callback.
 
