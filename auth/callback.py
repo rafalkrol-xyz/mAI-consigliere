@@ -2,10 +2,16 @@ import webbrowser
 
 
 async def open_browser(url: str) -> None:
+    """Open the system browser for OAuth login.
+
+    Falls back to printing the URL if the browser cannot be launched.
+    Runs the blocking webbrowser call in a thread so the event loop is not stalled.
+    """
     print(
         f"\nOpening browser for Atlassian login...\nIf it doesn't open, visit:\n  {url}\n"
     )
-    webbrowser.open(url)
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, webbrowser.open, url)
 
 
 async def local_callback() -> tuple[str, str | None]:
