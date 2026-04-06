@@ -23,7 +23,7 @@ async def local_callback(
     """Spin up a one-shot HTTP server to capture the OAuth callback.
 
     Args:
-        port: Local TCP port to listen on.  Tries the next port if occupied.
+        port: Local TCP port to listen on. Bubbles up the error if occupied.
         timeout: Seconds to wait for the callback before giving up.
 
     Returns:
