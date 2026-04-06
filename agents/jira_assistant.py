@@ -1,3 +1,4 @@
+import functools
 from pathlib import Path
 
 import httpx
@@ -16,7 +17,8 @@ _ROVO_MCP_URL = "https://mcp.atlassian.com/v1/mcp"
 _TOKEN_FILE = (
     Path.home() / ".config" / "mai-consigliere" / "jira_oauth.json"
 )  # TODO: use platformdirs so it works other OSs, too
-_REDIRECT_URI = "http://localhost:9876/callback"
+_CALLBACK_PORT = 9876
+_REDIRECT_URI = f"http://localhost:{_CALLBACK_PORT}/callback"
 
 
 _oauth = OAuthClientProvider(
@@ -29,7 +31,7 @@ _oauth = OAuthClientProvider(
     ),
     storage=FileTokenStorage(_TOKEN_FILE),
     redirect_handler=open_browser,
-    callback_handler=local_callback,
+    callback_handler=functools.partial(local_callback, port=_CALLBACK_PORT),
 )
 
 _jira_mcp_client = MCPClient(
