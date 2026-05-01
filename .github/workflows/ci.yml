@@ -1,4 +1,5 @@
 name: CI
+permissions: read-all # deny all writes by default
 
 on:
   push:
