@@ -16,7 +16,7 @@ jobs:
         with:
           enable-cache: true
           python-version-file: .python-version
-      - run: uv sync
+      - run: uv sync --only-group dev
       - run: uv run ruff check .
 
   ruff-format:
@@ -27,7 +27,7 @@ jobs:
         with:
           enable-cache: true
           python-version-file: .python-version
-      - run: uv sync
+      - run: uv sync --only-group dev
       - run: uv run ruff format --check .
 
   mypy:
