@@ -17,7 +17,7 @@ _ROVO_MCP_URL = "https://mcp.atlassian.com/v1/mcp"
 _TOKEN_FILE = (
     Path.home() / ".config" / "mai-consigliere" / "jira_oauth.json"
 )  # TODO: use platformdirs so it works other OSs, too
-_CALLBACK_PORT = 9876 # TODO: move to .env
+_CALLBACK_PORT = 9876  # TODO: move to .env
 _REDIRECT_URI = f"http://localhost:{_CALLBACK_PORT}/callback"
 
 

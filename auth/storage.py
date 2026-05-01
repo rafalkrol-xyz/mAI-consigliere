@@ -15,7 +15,11 @@ class FileTokenStorage(TokenStorage):
 
     def __init__(self, path: Path) -> None:
         self._path = path
-        self._data = _StoredData.model_validate_json(path.read_text()) if path.exists() else _StoredData()
+        self._data = (
+            _StoredData.model_validate_json(path.read_text())
+            if path.exists()
+            else _StoredData()
+        )
 
     def _save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)

@@ -18,7 +18,7 @@ async def open_browser(url: str) -> None:
 
 async def local_callback(
     port: int = 9876,
-    timeout: float = 120, # seconds
+    timeout: float = 120,  # seconds
 ) -> tuple[str, str | None]:
     """Spin up a one-shot HTTP server to capture the OAuth callback.
 

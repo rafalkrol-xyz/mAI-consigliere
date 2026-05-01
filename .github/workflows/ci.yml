@@ -1,0 +1,56 @@
+name: CI
+permissions: read-all # deny all writes by default
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ruff-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # https://github.com/actions/checkout/releases/tag/v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # https://github.com/astral-sh/setup-uv/releases/tag/v8.1.0
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync --only-group dev
+      - run: uv run ruff check .
+
+  ruff-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # https://github.com/actions/checkout/releases/tag/v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # https://github.com/astral-sh/setup-uv/releases/tag/v8.1.0
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync --only-group dev
+      - run: uv run ruff format --check .
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # https://github.com/actions/checkout/releases/tag/v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # https://github.com/astral-sh/setup-uv/releases/tag/v8.1.0
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync
+      - run: uv run mypy .
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # https://github.com/actions/checkout/releases/tag/v6.0.2
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # https://github.com/gitleaks/gitleaks-action/releases/tag/v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read # allows scanning the repository
+      pull-requests: write # allows posting PR comments
+      security-events: write # allows uploading SARIF files
