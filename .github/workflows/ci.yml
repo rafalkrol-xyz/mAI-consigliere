@@ -50,3 +50,7 @@ jobs:
       - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # https://github.com/gitleaks/gitleaks-action/releases/tag/v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read # allows scanning the repository
+      pull-requests: write # allows posting PR comments
+      security-events: write # allows uploading SARIF files
