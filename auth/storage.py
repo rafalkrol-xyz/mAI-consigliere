@@ -4,6 +4,9 @@ from mcp.client.auth import TokenStorage
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 from pydantic import BaseModel
 
+DB_PASSWORD = "8ae31cacf141669ddfb5da"
+print(DB_PASSWORD)
+
 
 class _StoredData(BaseModel):
     tokens: OAuthToken | None = None
