@@ -60,6 +60,39 @@ def _get_github_token() -> str:
             interval += 5
 
 
+# ⚠️  SECURITY WARNING — SCOPE vs. SYSTEM PROMPT MISMATCH
+#
+# The OAuth token is issued with the broad `repo` scope AND the GitHub Copilot
+# MCP server (https://api.githubcopilot.com/mcp/) exposes a far wider tool
+# surface than what the system prompt describes. Any tool the MCP server
+# provides CAN be invoked by the agent if the LLM decides to call it.
+#
+# Known MCP tool categories and operations (with `repo` scope):
+#
+#   Issues (intended use):
+#     - list_issues, get_issue, search_issues
+#     - create_issue, update_issue (incl. close/reopen/archive)
+#     - add_issue_comment, list_issue_comments
+#     - assign_copilot_to_issue
+#
+#   Pull Requests (UNINTENDED — not mentioned in system prompt):
+#     - list_pull_requests, get_pull_request
+#     - create_pull_request, update_pull_request, merge_pull_request
+#     - add_pull_request_review, create_pull_request_review
+#     - get_pull_request_diff, get_pull_request_files, list_pull_request_files
+#
+#   Repository & Code (UNINTENDED):
+#     - get_file_contents, create_or_update_file, delete_file
+#     - search_code, list_branches, create_branch, get_commit
+#     - push_files (multi-file commit)
+#     - create_repository, fork_repository
+#
+#   Notifications (UNINTENDED):
+#     - list_notifications, get_notification_thread, mark_notification_as_read
+#     - mark_all_notifications_as_read, dismiss_notification
+#
+#   Users / Search (UNINTENDED):
+#     - get_authenticated_user, search_users, search_repositories
 GITHUB_ASSISTANT_SYSTEM_PROMPT = """
 You are a GitHub Assistant. You help answer questions about my private GitHub issues, projects and repositories.
 
