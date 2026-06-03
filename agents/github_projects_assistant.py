@@ -3,6 +3,7 @@ from pathlib import Path
 
 import httpx
 from strands import Agent, tool
+from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
 
 from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
@@ -91,6 +92,30 @@ _GITHUB_MUTATING_TOOLS: frozenset[str] = frozenset(
         "dismiss_notification",
     }
 )
+
+
+class GitHubMutationApprovalHook(HookProvider):
+    """Intercepts every mutating GitHub MCP tool call and requires human approval.
+
+    This is the code-enforcement layer. Even if the LLM bypasses the system
+    prompt instruction to call handoff_to_user first, this hook will still
+    pause execution and prompt the user before any write operation is executed.
+    """
+
+    def register_hooks(self, registry: HookRegistry, **kwargs: Any) -> None:
+        registry.add_callback(BeforeToolCallEvent, self.require_approval)
+
+    def require_approval(self, event: BeforeToolCallEvent) -> None:
+        tool_name = event.tool_use["name"]
+        if tool_name not in _GITHUB_MUTATING_TOOLS:
+            return
+
+        approval = event.interrupt(
+            "github-mutation-approval",
+            reason={"tool": tool_name, "input": event.tool_use["input"]},
+        )
+        if str(approval).strip().lower() not in ("y", "yes"):
+            event.cancel_tool = "Operation cancelled by user."
 
 
 def _get_github_token() -> str:
