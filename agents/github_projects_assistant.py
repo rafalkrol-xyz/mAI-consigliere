@@ -1,5 +1,7 @@
+import json
 import time
 from pathlib import Path
+from typing import Any
 
 import httpx
 from strands import Agent, tool
@@ -7,6 +9,7 @@ from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
 
 from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
+from strands_tools import handoff_to_user
 
 _CLIENT_ID = "178c6fc778ccc68e1d6a"  # GitHub CLI's public client_id
 # TODO: use the keyring library to avoid storing the token in plain text
@@ -190,14 +193,52 @@ def github_projects_assistant(query: str) -> str:
     try:
         print("Routed to GitHub Projects Assistant")
         with _github_mcp_client:
-            tools = _github_mcp_client.list_tools_sync()
+            mcp_tools = _github_mcp_client.list_tools_sync()
             agent = Agent(
                 system_prompt=GITHUB_ASSISTANT_SYSTEM_PROMPT,
-                tools=tools,
+                # handoff_to_user: UX layer — agent proactively asks for consent
+                # mcp_tools: all GitHub MCP tools fetched at runtime
+                tools=[handoff_to_user, *mcp_tools],
+                # GitHubMutationApprovalHook: enforcement layer — intercepts
+                # every mutating tool call before execution regardless of
+                # whether the agent called handoff_to_user first.
+                hooks=[GitHubMutationApprovalHook()],
+                callback_handler=None,
             )
-            agent_response = agent(query)
-            text_response = str(agent_response)
 
+            result = agent(query)
+
+            # Handle interrupt loop: the BeforeToolCallEvent hook pauses the
+            # agent and waits for human approval via stdin before resuming.
+            while True:
+                if result.stop_reason != "interrupt":
+                    break
+
+                responses = []
+                for interrupt in result.interrupts or []:
+                    if interrupt.name == "github-mutation-approval":
+                        tool_name = interrupt.reason.get("tool", "unknown")
+                        tool_input = json.dumps(
+                            interrupt.reason.get("input", {}), indent=2
+                        )
+                        user_input = input(
+                            f"\n⚠️  GitHub write operation requested:\n"
+                            f"  Tool : {tool_name}\n"
+                            f"  Input: {tool_input}\n"
+                            f"Approve? (y/N): "
+                        )
+                        responses.append(
+                            {
+                                "interruptResponse": {
+                                    "interruptId": interrupt.id,
+                                    "response": user_input,
+                                }
+                            }
+                        )
+
+                result = agent(responses)
+
+            text_response = str(result)
             if len(text_response) > 0:
                 return text_response
 
