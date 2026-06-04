@@ -1,5 +1,6 @@
+"""Jira Assistant agent."""
+
 import functools
-from pathlib import Path
 
 import httpx
 from strands import Agent, tool
@@ -12,42 +13,34 @@ from strands.tools.mcp import MCPClient
 
 from auth.storage import FileTokenStorage
 from auth.callback import local_callback, open_browser
-
-_ROVO_MCP_URL = "https://mcp.atlassian.com/v1/mcp"
-_TOKEN_FILE = (
-    Path.home() / ".config" / "mai-consigliere" / "jira_oauth.json"
-)  # TODO: use platformdirs so it works other OSs, too
-_CALLBACK_PORT = 9876  # TODO: move to .env
-_REDIRECT_URI = f"http://localhost:{_CALLBACK_PORT}/callback"
+from agents.jira.config import (
+    ROVO_MCP_URL,
+    TOKEN_FILE,
+    CALLBACK_PORT,
+    REDIRECT_URI,
+    JIRA_ASSISTANT_SYSTEM_PROMPT,
+)
 
 
 _oauth = OAuthClientProvider(
-    server_url=_ROVO_MCP_URL,
+    server_url=ROVO_MCP_URL,
     client_metadata=OAuthClientMetadata(
-        redirect_uris=[AnyUrl(_REDIRECT_URI)],
+        redirect_uris=[AnyUrl(REDIRECT_URI)],
         client_name="mAI Consigliere",
         grant_types=["authorization_code", "refresh_token"],
         token_endpoint_auth_method="none",
     ),
-    storage=FileTokenStorage(_TOKEN_FILE),
+    storage=FileTokenStorage(TOKEN_FILE),
     redirect_handler=open_browser,
-    callback_handler=functools.partial(local_callback, port=_CALLBACK_PORT),
+    callback_handler=functools.partial(local_callback, port=CALLBACK_PORT),
 )
 
 _jira_mcp_client = MCPClient(
     lambda: streamable_http_client(
-        url=_ROVO_MCP_URL,
+        url=ROVO_MCP_URL,
         http_client=httpx.AsyncClient(auth=_oauth),
     )
 )
-
-JIRA_ASSISTANT_SYSTEM_PROMPT = """
-You are a Jira Assistant. You help answer questions about Jira issues, projects, and boards.
-
-You have access to Jira via the Atlassian Rovo MCP server.
-
-Always be concise and factual. Only report what the data shows.
-"""
 
 
 @tool

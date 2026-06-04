@@ -7,7 +7,7 @@ from strands.telemetry import StrandsTelemetry
 from agents.consigliere.config import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 from agents.korean.main import korean_assistant
 from agents.github.main import github_assistant
-from agents.jira_assistant import jira_assistant
+from agents.jira.main import jira_assistant
 
 # When LOG_LEVEL is unset (that's the default behavior, no logs are written
 log_level = os.getenv("LOG_LEVEL")
