@@ -18,6 +18,7 @@ from agents.jira.config import (
     TOKEN_FILE,
     CALLBACK_PORT,
     REDIRECT_URI,
+    JIRA_ASSISTANT_MODEL,
     JIRA_ASSISTANT_SYSTEM_PROMPT,
 )
 
@@ -60,6 +61,7 @@ def jira_assistant(query: str) -> str:
             tools = _jira_mcp_client.list_tools_sync()
             agent = Agent(
                 system_prompt=JIRA_ASSISTANT_SYSTEM_PROMPT,
+                model=JIRA_ASSISTANT_MODEL,
                 tools=tools,
             )
             agent_response = agent(query)
