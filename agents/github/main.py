@@ -15,6 +15,7 @@ from agents.hooks import MutationApprovalHook
 from agents.github.config import (
     CLIENT_ID,
     TOKEN_FILE,
+    GITHUB_ASSISTANT_MODEL,
     GITHUB_ASSISTANT_SYSTEM_PROMPT,
     GITHUB_MUTATING_TOOLS,
 )
@@ -95,6 +96,7 @@ def github_assistant(query: str) -> str:
             mcp_tools = _github_mcp_client.list_tools_sync()
             agent = Agent(
                 system_prompt=GITHUB_ASSISTANT_SYSTEM_PROMPT,
+                model=GITHUB_ASSISTANT_MODEL,
                 # handoff_to_user: UX layer — agent proactively asks for consent
                 # mcp_tools: all GitHub MCP tools fetched at runtime
                 tools=[handoff_to_user, *mcp_tools],
