@@ -6,6 +6,7 @@ from typing import Any
 import httpx
 from strands import Agent, tool
 from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
+from strands.types.interrupt import InterruptResponseContent
 
 from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
@@ -214,7 +215,7 @@ def github_projects_assistant(query: str) -> str:
                 if result.stop_reason != "interrupt":
                     break
 
-                responses = []
+                responses: list[InterruptResponseContent] = []
                 for interrupt in result.interrupts or []:
                     if interrupt.name == "github-mutation-approval":
                         tool_name = interrupt.reason.get("tool", "unknown")
