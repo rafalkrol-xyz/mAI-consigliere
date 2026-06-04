@@ -4,7 +4,7 @@ import logging
 from strands import Agent
 from strands.telemetry import StrandsTelemetry
 
-from agents.consigliere import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
+from agents.consigliere.config import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 from agents.korean_assistant import korean_assistant
 from agents.github_projects_assistant import github_projects_assistant
 from agents.jira_assistant import jira_assistant
