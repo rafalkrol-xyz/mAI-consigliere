@@ -6,7 +6,7 @@ from strands.telemetry import StrandsTelemetry
 
 from agents.consigliere.config import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 from agents.korean.main import korean_assistant
-from agents.github_projects_assistant import github_projects_assistant
+from agents.github.main import github_assistant
 from agents.jira_assistant import jira_assistant
 
 # When LOG_LEVEL is unset (that's the default behavior, no logs are written
@@ -49,7 +49,7 @@ consigliere = Agent(
     model=CONSIGLIERE_MODEL,
     tools=[
         korean_assistant,
-        github_projects_assistant,
+        github_assistant,
         jira_assistant,
     ],
 )
