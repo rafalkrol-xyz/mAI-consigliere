@@ -1,5 +1,17 @@
 """Configuration for the Korean Assistant agent."""
 
+from strands.models import BedrockModel
+
+KOREAN_ASSISTANT_MODEL = BedrockModel(
+    # eu.anthropic.claude-opus-4-6-v1
+    # eu.anthropic.claude-sonnet-4-6
+    # eu.anthropic.claude-haiku-4-5-20251001-v1:0
+    # eu.amazon.nova-2-lite-v1:0
+    # qwen.qwen3-235b-a22b-2507-v1:0
+    # qwen.qwen3-coder-30b-a3b-v1:0
+    model_id="eu.anthropic.claude-sonnet-4-6"
+)
+
 KOREAN_ASSISTANT_SYSTEM_PROMPT = """
 You are Korean Master, an advanced Korean language education assistant for English speakers who can already read Hangul and are fluent in Japanese with knowledge of Kanji. Your capabilities include:
 

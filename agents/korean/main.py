@@ -3,7 +3,7 @@
 from strands import Agent, tool
 from strands_tools import file_read, file_write, editor
 
-from agents.korean.config import KOREAN_ASSISTANT_SYSTEM_PROMPT
+from agents.korean.config import KOREAN_ASSISTANT_SYSTEM_PROMPT, KOREAN_ASSISTANT_MODEL
 
 
 @tool
@@ -24,6 +24,7 @@ def korean_assistant(query: str) -> str:
 
         korean_agent = Agent(
             system_prompt=KOREAN_ASSISTANT_SYSTEM_PROMPT,
+            model=KOREAN_ASSISTANT_MODEL,
             tools=[editor, file_read, file_write],
         )
         agent_response = korean_agent(formatted_query)
