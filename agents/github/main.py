@@ -47,7 +47,7 @@ def _get_github_token() -> str:
         poll = httpx.post(
             "https://github.com/login/oauth/access_token",
             data={
-                "client_id": _CLIENT_ID,
+                "client_id": CLIENT_ID,
                 "device_code": data["device_code"],
                 "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
             },
