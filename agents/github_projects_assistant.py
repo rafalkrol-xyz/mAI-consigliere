@@ -1,12 +1,12 @@
 import json
 import time
 from pathlib import Path
-from typing import Any
 
 import httpx
 from strands import Agent, tool
-from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
 from strands.types.interrupt import InterruptResponseContent
+
+from agents.hooks import MutationApprovalHook
 
 from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
@@ -98,30 +98,6 @@ _GITHUB_MUTATING_TOOLS: frozenset[str] = frozenset(
 )
 
 
-class GitHubMutationApprovalHook(HookProvider):
-    """Intercepts every mutating GitHub MCP tool call and requires human approval.
-
-    This is the code-enforcement layer. Even if the LLM bypasses the system
-    prompt instruction to call handoff_to_user first, this hook will still
-    pause execution and prompt the user before any write operation is executed.
-    """
-
-    def register_hooks(self, registry: HookRegistry, **kwargs: Any) -> None:
-        registry.add_callback(BeforeToolCallEvent, self.require_approval)
-
-    def require_approval(self, event: BeforeToolCallEvent) -> None:
-        tool_name = event.tool_use["name"]
-        if tool_name not in _GITHUB_MUTATING_TOOLS:
-            return
-
-        approval = event.interrupt(
-            "github-mutation-approval",
-            reason={"tool": tool_name, "input": event.tool_use["input"]},
-        )
-        if str(approval).strip().lower() not in ("y", "yes"):
-            event.cancel_tool = "Operation cancelled by user."
-
-
 def _get_github_token() -> str:
     if _TOKEN_FILE.exists():
         return _TOKEN_FILE.read_text().strip()
@@ -203,7 +179,7 @@ def github_projects_assistant(query: str) -> str:
                 # GitHubMutationApprovalHook: enforcement layer — intercepts
                 # every mutating tool call before execution regardless of
                 # whether the agent called handoff_to_user first.
-                hooks=[GitHubMutationApprovalHook()],
+                hooks=[MutationApprovalHook(_GITHUB_MUTATING_TOOLS)],
                 callback_handler=None,
             )
 
@@ -217,7 +193,7 @@ def github_projects_assistant(query: str) -> str:
 
                 responses: list[InterruptResponseContent] = []
                 for interrupt in result.interrupts or []:
-                    if interrupt.name == "github-mutation-approval":
+                    if interrupt.name == "mutation-approval":
                         tool_name = interrupt.reason.get("tool", "unknown")
                         tool_input = json.dumps(
                             interrupt.reason.get("input", {}), indent=2
