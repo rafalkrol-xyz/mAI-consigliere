@@ -1,5 +1,6 @@
 """Tests for agents/hooks.py — MutationApprovalHook."""
 
+import pytest
 from unittest.mock import MagicMock
 from strands.hooks import BeforeToolCallEvent
 from agents.hooks import MutationApprovalHook
@@ -47,27 +48,27 @@ def test_hook_cancels_on_rejection():
     assert event.cancel_tool == "Operation cancelled by user."
 
 
-def test_hook_accepts_various_yes_inputs():
+@pytest.mark.parametrize("yes_input", ["y", "Y", "yes", " YES ", "yEs"])
+def test_hook_accepts_various_yes_inputs(yes_input: str) -> None:
     hook = MutationApprovalHook(MUTATING_TOOLS)
-    for yes_input in ["y", "Y", "yes", " YES ", "yEs"]:
-        event = MagicMock(spec=BeforeToolCallEvent)
-        event.tool_use = {"name": "create_issue", "input": {}}
-        event.interrupt.return_value = yes_input
-        event.cancel_tool = None
-        
-        hook.require_approval(event)
-        
-        assert event.cancel_tool is None
+    event = MagicMock(spec=BeforeToolCallEvent)
+    event.tool_use = {"name": "create_issue", "input": {}}
+    event.interrupt.return_value = yes_input
+    event.cancel_tool = None
+
+    hook.require_approval(event)
+
+    assert event.cancel_tool is None
 
 
-def test_hook_cancels_on_empty_or_random_input():
+@pytest.mark.parametrize("bad_input", ["", "  ", "maybe", "cancel"])
+def test_hook_cancels_on_empty_or_random_input(bad_input: str) -> None:
     hook = MutationApprovalHook(MUTATING_TOOLS)
-    for bad_input in ["", "  ", "maybe", "cancel"]:
-        event = MagicMock(spec=BeforeToolCallEvent)
-        event.tool_use = {"name": "create_issue", "input": {}}
-        event.interrupt.return_value = bad_input
-        event.cancel_tool = None
-        
-        hook.require_approval(event)
-        
-        assert event.cancel_tool == "Operation cancelled by user."
+    event = MagicMock(spec=BeforeToolCallEvent)
+    event.tool_use = {"name": "create_issue", "input": {}}
+    event.interrupt.return_value = bad_input
+    event.cancel_tool = None
+
+    hook.require_approval(event)
+
+    assert event.cancel_tool == "Operation cancelled by user."
