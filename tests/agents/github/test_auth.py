@@ -174,6 +174,8 @@ def test_device_flow_raises_on_unexpected_error(mock_sleep, tmp_path: Path) -> N
 
 
 def test_device_flow_raises_on_http_error(tmp_path: Path) -> None:
+    # raise_for_status fires on the first POST (device code request),
+    # before the polling loop — so time.sleep is never called.
     token_file = tmp_path / "github_token"
     bad_resp = MagicMock(spec=httpx.Response)
     bad_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
