@@ -13,9 +13,9 @@ def test_hook_ignores_non_mutating_tools():
     event = MagicMock(spec=BeforeToolCallEvent)
     event.tool_use = {"name": "get_issue", "input": {"id": 123}}
     event.cancel_tool = None  # Initialize to None
-    
+
     hook.require_approval(event)
-    
+
     event.interrupt.assert_not_called()
     assert event.cancel_tool is None
 
@@ -26,12 +26,11 @@ def test_hook_interrupts_mutating_tool():
     event.tool_use = {"name": "create_issue", "input": {"title": "Bug"}}
     event.interrupt.return_value = "yes"
     event.cancel_tool = None
-    
+
     hook.require_approval(event)
-    
+
     event.interrupt.assert_called_once_with(
-        "mutation-approval",
-        reason={"tool": "create_issue", "input": {"title": "Bug"}}
+        "mutation-approval", reason={"tool": "create_issue", "input": {"title": "Bug"}}
     )
     assert event.cancel_tool is None
 
@@ -42,9 +41,9 @@ def test_hook_cancels_on_rejection():
     event.tool_use = {"name": "delete_repo", "input": {"name": "my-repo"}}
     event.interrupt.return_value = "no"
     event.cancel_tool = None
-    
+
     hook.require_approval(event)
-    
+
     assert event.cancel_tool == "Operation cancelled by user."
 
 
