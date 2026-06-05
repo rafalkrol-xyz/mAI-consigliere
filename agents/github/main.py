@@ -1,7 +1,7 @@
 """GitHub Assistant agent."""
 
 import json
-import time
+from functools import lru_cache
 
 import httpx
 from strands import Agent, tool
@@ -12,71 +12,26 @@ from strands.tools.mcp import MCPClient
 from strands_tools import handoff_to_user
 
 from agents.hooks import MutationApprovalHook
+from agents.github.auth import get_github_token
 from agents.github.config import (
-    CLIENT_ID,
-    TOKEN_FILE,
     GITHUB_ASSISTANT_MODEL,
     GITHUB_ASSISTANT_SYSTEM_PROMPT,
     GITHUB_MUTATING_TOOLS,
 )
 
 
-def _get_github_token() -> str:
-    if TOKEN_FILE.exists():
-        return TOKEN_FILE.read_text().strip()
-
-    # Equivalent curl command:
-    # curl -X POST "https://github.com/login/device/code" \
-    #      -H "Accept: application/json" \
-    #      -d "client_id=178c6fc778ccc68e1d6a&scope=repo"
-
-    r = httpx.post(
-        "https://github.com/login/device/code",
-        data={"client_id": CLIENT_ID, "scope": "repo"},
-        headers={"Accept": "application/json"},
-    )
-    r.raise_for_status()
-    data = r.json()
-
-    print(
-        f"\nOpen https://github.com/login/device and enter code: {data['user_code']}\n"
-    )
-
-    interval = data.get("interval", 5)
-    while True:
-        time.sleep(interval)
-        poll = httpx.post(
-            "https://github.com/login/oauth/access_token",
-            data={
-                "client_id": CLIENT_ID,
-                "device_code": data["device_code"],
-                "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-            },
-            headers={"Accept": "application/json"},
+@lru_cache(maxsize=1)
+def _get_mcp_client() -> MCPClient:
+    """Lazily initialize and return the GitHub MCP client."""
+    token = get_github_token()
+    return MCPClient(
+        lambda: streamable_http_client(
+            url="https://api.githubcopilot.com/mcp/",
+            http_client=httpx.AsyncClient(
+                headers={"Authorization": f"Bearer {token}"}
+            ),
         )
-        poll.raise_for_status()
-        result = poll.json()
-        if "access_token" in result:
-            token = result["access_token"]
-            TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
-            TOKEN_FILE.write_text(token)
-            print("GitHub authentication successful.\n")
-            return token
-        if result.get("error") not in ("authorization_pending", "slow_down"):
-            raise RuntimeError(f"Device flow failed: {result}")
-        if result.get("error") == "slow_down":
-            interval += 5
-
-
-_github_token = _get_github_token()
-_github_mcp_client = MCPClient(
-    lambda: streamable_http_client(
-        url="https://api.githubcopilot.com/mcp/",
-        http_client=httpx.AsyncClient(
-            headers={"Authorization": f"Bearer {_github_token}"}
-        ),
     )
-)
 
 
 @tool
@@ -92,8 +47,9 @@ def github_assistant(query: str) -> str:
     """
     try:
         print("Routed to GitHub Projects Assistant")
-        with _github_mcp_client:
-            mcp_tools = _github_mcp_client.list_tools_sync()
+        mcp_client = _get_mcp_client()
+        with mcp_client:
+            mcp_tools = mcp_client.list_tools_sync()
             agent = Agent(
                 system_prompt=GITHUB_ASSISTANT_SYSTEM_PROMPT,
                 model=GITHUB_ASSISTANT_MODEL,
