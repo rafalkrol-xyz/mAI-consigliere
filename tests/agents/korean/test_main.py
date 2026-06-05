@@ -1,6 +1,6 @@
 """Tests for agents/korean/main.py."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from agents.korean.main import korean_assistant
 from agents.korean.config import KOREAN_ASSISTANT_SYSTEM_PROMPT, KOREAN_ASSISTANT_MODEL
 from strands_tools import file_read, file_write, editor
