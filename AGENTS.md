@@ -42,23 +42,17 @@ LOG_LEVEL=DEBUG uv run main.py
 ```
 
 ### Testing
-Currently no test framework is configured. When adding tests:
+The project uses `pytest` for testing.
 
 ```bash
-# Install pytest (recommended)
-uv add --dev pytest pytest-cov pytest-asyncio
-
 # Run all tests
 uv run pytest
 
 # Run a single test file
-uv run pytest tests/test_file.py
+uv run pytest tests/agents/github/test_auth.py
 
-# Run a single test function
-uv run pytest tests/test_file.py::test_function_name
-
-# Run tests with coverage
-uv run pytest --cov=. --cov-report=html
+# Run with verbose output and showing print statements
+uv run pytest -sv
 ```
 
 ### Linting & Formatting
@@ -102,7 +96,7 @@ docker run \
 
 ```
 mAI-consigliere/
-├── main.py                    # Application entry point; wires up the orchestrator
+├── main.py                    # Application entry point; initializes telemetry and calls run_app()
 ├── pyproject.toml             # Project metadata and dependencies
 ├── uv.lock                    # Locked dependencies
 ├── .python-version            # Python version specification
@@ -110,34 +104,49 @@ mAI-consigliere/
 ├── agents/
 │   ├── __init__.py
 │   ├── hooks.py               # MutationApprovalHook — human-in-the-loop safety hook
-│   ├── consigliere/           # Orchestrator agent
+│   ├── consigliere/           # Orchestrator agent package
 │   │   ├── __init__.py
-│   │   └── config.py          # Model selection + system prompt for the orchestrator
-│   ├── github/                # GitHub specialist agent (MCP-backed)
+│   │   ├── config.py          # Model selection + system prompt for the orchestrator
+│   │   └── main.py            # Orchestrator Agent setup + interactive loop
+│   ├── github/                # GitHub specialist agent package (MCP-backed)
 │   │   ├── __init__.py
+│   │   ├── auth.py            # GitHub Device Flow authentication
 │   │   ├── config.py
-│   │   └── main.py            # @tool-decorated agent function + device-flow auth
-│   ├── jira/                  # Jira / Atlassian Rovo specialist agent (MCP-backed)
+│   │   └── main.py            # @tool-decorated agent function + lazy MCP client
+│   ├── jira/                  # Jira / Atlassian Rovo specialist agent package (MCP-backed)
 │   │   ├── __init__.py
+│   │   ├── auth.py            # Jira OAuth 2.0 provider configuration
 │   │   ├── config.py
-│   │   └── main.py            # @tool-decorated agent function + OAuth 2.0 auth
-│   └── korean/                # Korean language specialist agent
+│   │   └── main.py            # @tool-decorated agent function + lazy MCP client
+│   └── korean/                # Korean language specialist agent package
 │       ├── __init__.py
 │       ├── config.py
 │       └── main.py            # @tool-decorated agent function
-└── auth/
-    ├── __init__.py
-    ├── callback.py            # One-shot local HTTP server for OAuth 2.0 callback
-    └── storage.py             # File-based OAuth token/client-info storage
+├── auth/                      # Shared OAuth utilities (used by Jira)
+│   ├── __init__.py
+│   ├── callback.py            # One-shot local HTTP server for OAuth 2.0 callback
+│   └── storage.py             # File-based OAuth token/client-info storage
+└── tests/                     # Unit tests
+    ├── agents/
+    │   ├── test_hooks.py      # Tests for shared MutationApprovalHook
+    │   ├── github/
+    │   │   └── test_auth.py   # Tests for GitHub auth flow
+    │   ├── jira/
+    │   │   └── test_auth.py   # Tests for Jira auth provider
+    │   └── korean/
+    │       └── test_main.py   # Tests for Korean assistant logic
+    └── __init__.py
 ```
 
 ## Agent Architecture
 
 ### Orchestrator (`agents/consigliere/`)
-The orchestrator is a Strands `Agent` instance created directly in `main.py`. It holds the strategic system prompt and routes user requests to specialist agents by calling them as tools.
+The orchestrator is a Strands `Agent` instance managed by the `run_app()` function in `agents/consigliere/main.py`. It holds the strategic system prompt and routes user requests to specialist agents by calling them as tools.
 
 ### Specialist Agents (`agents/github/`, `agents/jira/`, `agents/korean/`)
-Each specialist is implemented as a **`@tool`-decorated function** that internally creates a fresh `Agent` for every invocation. This keeps agents stateless and avoids shared mutable state.
+Each specialist is implemented as a **`@tool`-decorated function** in its respective `main.py`. These functions internally create a fresh `Agent` for every invocation. This keeps agents stateless and avoids shared mutable state.
+
+Authentication and MCP clients are initialized **lazily** inside these functions (using `@lru_cache`) to avoid side effects during application startup.
 
 ```python
 from strands import Agent, tool
@@ -154,19 +163,23 @@ def my_assistant(query: str) -> str:
 ```
 
 ### MCP Integration
-Both GitHub and Jira agents connect to external **MCP servers** over streamable HTTP using `strands.tools.mcp.MCPClient`. Tools are fetched at call time with `list_tools_sync()`.
+Both GitHub and Jira agents connect to external **MCP servers** over streamable HTTP using `strands.tools.mcp.MCPClient`. Clients are lazily initialized only when the specialist tool is first called.
 
 ```python
 from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
 
-_mcp_client = MCPClient(
-    lambda: streamable_http_client(url="https://...", http_client=...)
-)
+def _get_mcp_client() -> MCPClient:
+    # Lazy initialization logic here
+    ...
 
-with _mcp_client:
-    mcp_tools = _mcp_client.list_tools_sync()
-    agent = Agent(..., tools=mcp_tools)
+@tool
+def mcp_assistant(query: str) -> str:
+    mcp_client = _get_mcp_client()
+    with mcp_client:
+        mcp_tools = mcp_client.list_tools_sync()
+        agent = Agent(..., tools=mcp_tools)
+        return str(agent(query))
 ```
 
 ### Human-in-the-loop / Mutation Approval
@@ -184,13 +197,13 @@ agent = Agent(
 ## Authentication
 
 ### GitHub (Device Flow OAuth)
-`agents/github/main.py` implements GitHub's [device authorization flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow):
-1. On first run, a user code is printed and the user visits `https://github.com/login/device`.
+`agents/github/auth.py` implements GitHub's [device authorization flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow):
+1. On first run (when the tool is called), a user code is printed and the user visits `https://github.com/login/device`.
 2. After approval, an access token is fetched and **persisted to disk** (path configured in `agents/github/config.py`).
 3. Subsequent runs read the token from disk — no browser needed.
 
 ### Jira / Atlassian Rovo (OAuth 2.0 + local callback)
-`agents/jira/main.py` uses `mcp.client.auth.OAuthClientProvider`:
+`agents/jira/auth.py` configures `mcp.client.auth.OAuthClientProvider`:
 1. A local one-shot HTTP server (`auth/callback.py`) listens on a configurable port (default `9876`) for the OAuth redirect.
 2. The system browser is opened automatically for the Atlassian login page.
 3. After authentication, tokens are persisted via `auth/storage.py` (`FileTokenStorage`).
