@@ -116,7 +116,9 @@ def test_device_flow_creates_parent_directories(mock_sleep, tmp_path: Path) -> N
 
 
 @patch("time.sleep", return_value=None)
-def test_device_flow_retries_on_authorization_pending(mock_sleep, tmp_path: Path) -> None:
+def test_device_flow_retries_on_authorization_pending(
+    mock_sleep, tmp_path: Path
+) -> None:
     token_file = tmp_path / "github_token"
     device_code_resp = _make_response(
         {"device_code": "dc1", "user_code": "ABC-123", "interval": 0}
@@ -133,7 +135,9 @@ def test_device_flow_retries_on_authorization_pending(mock_sleep, tmp_path: Path
 
 
 @patch("time.sleep", return_value=None)
-def test_device_flow_increases_interval_on_slow_down(mock_sleep, tmp_path: Path) -> None:
+def test_device_flow_increases_interval_on_slow_down(
+    mock_sleep, tmp_path: Path
+) -> None:
     token_file = tmp_path / "github_token"
     initial_interval = 3
     device_code_resp = _make_response(

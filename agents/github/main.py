@@ -27,9 +27,7 @@ def _get_mcp_client() -> MCPClient:
     return MCPClient(
         lambda: streamable_http_client(
             url="https://api.githubcopilot.com/mcp/",
-            http_client=httpx.AsyncClient(
-                headers={"Authorization": f"Bearer {token}"}
-            ),
+            http_client=httpx.AsyncClient(headers={"Authorization": f"Bearer {token}"}),
         )
     )
 

@@ -33,7 +33,9 @@ def get_jira_oauth_provider(
     """
     path = token_file or TOKEN_FILE
     port = callback_port or CALLBACK_PORT
-    redirect_uri = f"http://localhost:{port}/callback" if callback_port else REDIRECT_URI
+    redirect_uri = (
+        f"http://localhost:{port}/callback" if callback_port else REDIRECT_URI
+    )
 
     return OAuthClientProvider(
         server_url=ROVO_MCP_URL,
