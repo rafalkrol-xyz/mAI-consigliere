@@ -1,5 +1,16 @@
-from strands import Agent, tool
-from strands_tools import file_read, file_write, editor
+"""Configuration for the Korean Assistant agent."""
+
+from strands.models import BedrockModel
+
+KOREAN_ASSISTANT_MODEL = BedrockModel(
+    # eu.anthropic.claude-opus-4-6-v1
+    # eu.anthropic.claude-sonnet-4-6
+    # eu.anthropic.claude-haiku-4-5-20251001-v1:0
+    # eu.amazon.nova-2-lite-v1:0
+    # qwen.qwen3-235b-a22b-2507-v1:0
+    # qwen.qwen3-coder-30b-a3b-v1:0
+    model_id="eu.anthropic.claude-sonnet-4-6"
+)
 
 KOREAN_ASSISTANT_SYSTEM_PROMPT = """
 You are Korean Master, an advanced Korean language education assistant for English speakers who can already read Hangul and are fluent in Japanese with knowledge of Kanji. Your capabilities include:
@@ -25,34 +36,3 @@ You are Korean Master, an advanced Korean language education assistant for Engli
 
 Always present Korean text in Hangul with English translation — no romanization. Leverage the learner's Japanese fluency and Kanji knowledge as a bridge — many Sino-Korean words share Kanji roots (e.g. 학교 學校, 전화 電話). Be encouraging and concise.
 """
-
-
-@tool
-def korean_assistant(query: str) -> str:
-    """
-    Process and respond to Korean language learning queries from English speakers.
-
-    Args:
-        query: The user's Korean language question
-
-    Returns:
-        A helpful response addressing Korean language concepts, with examples in Hangul and English (no romanization)
-    """
-    formatted_query = f"Answer this Korean language learning question for an English speaker who reads Hangul and is fluent in Japanese with Kanji knowledge. Use Hangul with English translation (no romanization), and draw parallels to Japanese wherever helpful: {query}"
-
-    try:
-        print("Routed to Korean Assistant")
-
-        korean_agent = Agent(
-            system_prompt=KOREAN_ASSISTANT_SYSTEM_PROMPT,
-            tools=[editor, file_read, file_write],
-        )
-        agent_response = korean_agent(formatted_query)
-        text_response = str(agent_response)
-
-        if len(text_response) > 0:
-            return text_response
-
-        return "I apologize, but I couldn't properly analyze your Korean language question. Could you please rephrase or provide more context?"
-    except Exception as e:
-        return f"Error processing your Korean language query: {str(e)}"

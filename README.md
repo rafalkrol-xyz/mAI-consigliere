@@ -39,14 +39,14 @@ uv add --dev pytest pytest-cov pytest-asyncio
 # Run all tests
 uv run pytest
 
+# Run with verbose output and showing print statements
+uv run pytest -sv
+
 # Run a single test file
 uv run pytest tests/test_file.py
 
 # Run a single test function
 uv run pytest tests/test_file.py::test_function_name
-
-# Run tests with coverage
-uv run pytest --cov=. --cov-report=html
 ```
 
 ### Linting & Formatting
