@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/rafalkrol-xyz/mAI-consigliere/compare/v0.2.0...v0.3.0) (2026-06-07)
+
+
+### Features
+
+* Tidy up and reorganize ([#7](https://github.com/rafalkrol-xyz/mAI-consigliere/issues/7)) ([80f5006](https://github.com/rafalkrol-xyz/mAI-consigliere/commit/80f50067efbca1bdb3c7ea4480db1ef99a8bac4a))
+
 ## [0.2.0](https://github.com/rafalkrol-xyz/mAI-consigliere/compare/v0.1.0...v0.2.0) (2026-06-04)
 
 
