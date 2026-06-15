@@ -146,7 +146,7 @@ The orchestrator is a Strands `Agent` instance managed by the `run_app()` functi
 ### Specialist Agents (`agents/github/`, `agents/jira/`, `agents/korean/`)
 Each specialist is implemented as a **`@tool`-decorated function** in its respective `main.py`. These functions internally create a fresh `Agent` for every invocation. This keeps agents stateless and avoids shared mutable state.
 
-Authentication and MCP clients are initialized **lazily** inside these functions (using `@lru_cache`) to avoid side effects during application startup.
+Authentication is resolved lazily on the first call (reading the cached token from disk). MCP clients are created fresh on every invocation — **do not use `@lru_cache` on `_get_mcp_client()`**. The `MCPClient` context manager tears down the connection on `__exit__`, so a cached instance would be dead on the second call, causing `RuntimeError: Connection to the MCP server was closed`.
 
 ```python
 from strands import Agent, tool
