@@ -37,6 +37,9 @@ def run_app():
                 print("\nGoodbye! 👋")
                 break
 
+            if not user_input.strip():
+                continue
+
             response = consigliere(
                 user_input,
             )
