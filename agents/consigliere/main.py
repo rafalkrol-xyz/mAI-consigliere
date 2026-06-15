@@ -1,5 +1,7 @@
 """Main logic for the mAI Consigliere orchestrator."""
 
+import readline  # noqa: F401 — enables line-editing & history in input()
+
 from strands import Agent
 from agents.consigliere.config import CONSIGLIERE_MODEL, CONSIGLIERE_AGENT_PROMPT
 from agents.korean import korean_assistant
