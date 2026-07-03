@@ -1,7 +1,6 @@
 """GitHub Assistant agent."""
 
 import json
-from functools import lru_cache
 
 import httpx
 from strands import Agent, tool
@@ -20,7 +19,6 @@ from agents.github.config import (
 )
 
 
-@lru_cache(maxsize=1)
 def _get_mcp_client() -> MCPClient:
     """Lazily initialize and return the GitHub MCP client."""
     token = get_github_token()
