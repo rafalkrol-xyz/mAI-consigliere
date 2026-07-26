@@ -55,6 +55,28 @@ uv run pytest tests/agents/github/test_auth.py
 uv run pytest -sv
 ```
 
+### Searching the Codebase
+Use `rg` (ripgrep) instead of `grep` when available — it respects `.gitignore`, skips binary/`.venv` noise by default, and is significantly faster. Fall back to `grep` only if `rg` is not installed.
+
+```bash
+# Search for a symbol across the repo
+rg "MutationApprovalHook"
+
+# Restrict to Python files
+rg -t py "def run_app"
+```
+
+### Running Python one-liners
+Don't invoke a bare `python`/`python3` — it may resolve to a system interpreter outside the project's venv (missing dependencies, wrong version). Use `uv run python -c "..."` instead, which runs inside the project's managed environment.
+
+```bash
+# Correct: runs with project deps + Python 3.14
+uv run python -c "import agents.consigliere.main"
+
+# Avoid: may hit a stray system Python
+python -c "import agents.consigliere.main"
+```
+
 ### Linting & Formatting
 `ruff` and `mypy` are already configured as dev dependencies in `pyproject.toml`.
 
