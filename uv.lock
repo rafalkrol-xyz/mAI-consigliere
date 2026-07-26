@@ -869,6 +869,7 @@ name = "mai-consigliere"
 version = "0.3.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "rich" },
     { name = "strands-agents", extra = ["otel"] },
     { name = "strands-agents-tools" },
 ]
@@ -883,6 +884,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "rich", specifier = ">=14.2.0" },
     { name = "strands-agents", extras = ["otel"], specifier = ">=1.23.0" },
     { name = "strands-agents-tools", specifier = ">=0.2.23" },
 ]
