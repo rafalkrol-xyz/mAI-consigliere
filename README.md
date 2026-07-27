@@ -29,13 +29,12 @@ uv run main.py
 python main.py
 ```
 
+The CLI greets you with a boxed welcome banner (active model, working directory), shows a
+"Thinking…" spinner while the agent works, and streams the response to your terminal as
+Markdown (tables, bullets, and syntax-highlighted code fences included) as it's generated.
+
 ### Testing
-Currently no test framework is configured. When adding tests:
-
 ```bash
-# Install pytest (recommended)
-uv add --dev pytest pytest-cov pytest-asyncio
-
 # Run all tests
 uv run pytest
 
@@ -43,18 +42,15 @@ uv run pytest
 uv run pytest -sv
 
 # Run a single test file
-uv run pytest tests/test_file.py
+uv run pytest tests/agents/consigliere/test_cli.py
 
 # Run a single test function
-uv run pytest tests/test_file.py::test_function_name
+uv run pytest tests/agents/consigliere/test_cli.py::TestRenderBanner::test_renders_configured_model_id
 ```
 
 ### Linting & Formatting
 
 ```bash
-# Add ruff (modern, fast linter and formatter)
-uv add --dev ruff
-
 # Format code
 uv run ruff format .
 
@@ -67,7 +63,6 @@ uv run ruff check .
 # Lint with auto-fix
 uv run ruff check --fix .
 
-# Type checking with mypy
-uv add --dev mypy
+# Type checking
 uv run mypy .
 ```
