@@ -7,7 +7,7 @@ from rich.console import Console
 
 from strands import Agent
 
-from agents.consigliere.cli import RichStreamingCallbackHandler, render_banner
+from agents.consigliere.cli import RichStreamingCallbackHandler, render_banner, render_help
 from agents.consigliere.config import CONSIGLIERE_AGENT_PROMPT, CONSIGLIERE_MODEL
 from agents.github import github_assistant
 from agents.jira import jira_assistant
@@ -44,6 +44,10 @@ def run_app() -> None:
                 break
 
             if not user_input.strip():
+                continue
+
+            if user_input.lower() == "/help":
+                render_help(console)
                 continue
 
             handler.start()

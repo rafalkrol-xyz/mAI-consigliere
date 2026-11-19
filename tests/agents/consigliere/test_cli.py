@@ -4,13 +4,35 @@ from unittest.mock import patch
 
 from rich.console import Console
 from rich.live import Live
-from rich.spinner import Spinner
 
-from agents.consigliere.cli import RichStreamingCallbackHandler, render_banner
+from agents.consigliere.cli import (
+    RichStreamingCallbackHandler,
+    ThinkingIndicator,
+    render_banner,
+    render_help,
+)
 
 
 def _recording_console() -> Console:
     return Console(record=True, force_terminal=True, width=100)
+
+
+class TestThinkingIndicator:
+    """Tests for ThinkingIndicator."""
+
+    def test_renders_elapsed_time_and_advances(self) -> None:
+        console = _recording_console()
+        indicator = ThinkingIndicator()
+
+        console.print(indicator)
+        first = console.export_text(clear=True)
+        assert "Thinking…" in first
+        assert "0.0s" in first or "0.1s" in first
+
+        indicator._start_time -= 5
+        console.print(indicator)
+        second = console.export_text(clear=True)
+        assert "5." in second
 
 
 class TestRichStreamingCallbackHandler:
@@ -23,7 +45,7 @@ class TestRichStreamingCallbackHandler:
 
         assert handler._live is not None
         assert isinstance(handler._live, Live)
-        assert isinstance(handler._live.get_renderable(), Spinner)
+        assert isinstance(handler._live.get_renderable(), ThinkingIndicator)
         assert handler._streaming is False
         assert handler._buffer == ""
 
@@ -104,6 +126,7 @@ class TestRenderBanner:
         rendered = console.export_text()
         assert "mAI Consigliere" in rendered
         assert "/home/user/project" in rendered
+        assert "/help" in rendered
         assert "exit" in rendered
 
     def test_renders_configured_model_id(self) -> None:
@@ -125,3 +148,16 @@ class TestRenderBanner:
 
         rendered = console.export_text()
         assert "unknown" in rendered
+
+
+class TestRenderHelp:
+    """Tests for render_help()."""
+
+    def test_renders_available_commands(self) -> None:
+        console = _recording_console()
+
+        render_help(console)
+
+        rendered = console.export_text()
+        assert "/help" in rendered
+        assert "exit" in rendered
