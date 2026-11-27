@@ -28,7 +28,9 @@ class ThinkingIndicator:
         self._start_time = time.monotonic()
         self._spinner = Spinner("dots", style="dim")
 
-    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
         elapsed = time.monotonic() - self._start_time
         table = Table.grid(padding=(0, 1))
         table.add_row(self._spinner, Text(f"Thinking… ({elapsed:0.1f}s)", style="dim"))
@@ -106,6 +108,7 @@ class RichStreamingCallbackHandler:
         self._streaming = True
         if self._live is not None:
             self._live.update(Markdown(self._buffer))
+
 
 def render_banner(console: Console) -> None:
     model_id = CONSIGLIERE_MODEL.config.get("model_id", "unknown")

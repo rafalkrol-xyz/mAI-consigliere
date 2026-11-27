@@ -10,6 +10,7 @@ from strands.hooks import (
 
 from agents.user_input import input_guard
 
+
 class MutationApprovalHook(HookProvider):
     """Intercepts mutating tool calls and requires human approval before execution.
 
@@ -37,6 +38,7 @@ class MutationApprovalHook(HookProvider):
         )
         if str(approval).strip().lower() not in ("y", "yes"):
             event.cancel_tool = "Operation cancelled by user."
+
 
 class PauseDisplayForInputHook(HookProvider):
     """Pauses the front-end's live display while interactive tools prompt.

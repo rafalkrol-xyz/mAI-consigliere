@@ -7,7 +7,11 @@ from rich.console import Console
 
 from strands import Agent
 
-from agents.consigliere.cli import RichStreamingCallbackHandler, render_banner, render_help
+from agents.consigliere.cli import (
+    RichStreamingCallbackHandler,
+    render_banner,
+    render_help,
+)
 from agents.consigliere.config import CONSIGLIERE_AGENT_PROMPT, CONSIGLIERE_MODEL
 from agents.github import github_assistant
 from agents.jira import jira_assistant

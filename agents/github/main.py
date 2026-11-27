@@ -56,7 +56,7 @@ def github_assistant(query: str) -> str:
                 # MutationApprovalHook: enforcement layer — intercepts every
                 # mutating tool call before execution regardless of whether
                 # the agent called handoff_to_user first.
-                 hooks=[
+                hooks=[
                     MutationApprovalHook(GITHUB_MUTATING_TOOLS),
                     PauseDisplayForInputHook(frozenset({"handoff_to_user"})),
                 ],
