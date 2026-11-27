@@ -34,13 +34,19 @@ def _get_mcp_client() -> MCPClient:
 @tool
 def github_assistant(query: str) -> str:
     """
-    Answer questions about GitHub project issues for a given repository.
+    Read and manage GitHub repositories: query issues, pull requests, and
+    projects, and perform write operations such as creating, updating,
+    commenting on, or closing issues and pull requests.
+
+    Write operations always require explicit user approval, which this
+    tool collects itself, so delegate write requests here directly.
 
     Args:
-        query: The user's question about the project or its issues
+        query: The user's GitHub request, including the repository
+            (owner/name or URL) and any details needed to fulfil it
 
     Returns:
-        A helpful answer based on the repository's open issues
+        The result of the request, or an explanation if it was declined
     """
     try:
         print("Routed to GitHub Projects Assistant")
