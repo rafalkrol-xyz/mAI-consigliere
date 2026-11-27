@@ -2,6 +2,8 @@
 
 import os
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from rich.console import Console, ConsoleOptions, RenderResult
@@ -46,10 +48,43 @@ class RichStreamingCallbackHandler:
         self._buffer = ""
         self._live: Live | None = None
         self._streaming = False
+        self._active = False  # True between start() and stop(), even while paused
 
     def start(self) -> None:
+        """Begin a turn: show the thinking indicator in a fresh Live block."""
         self._buffer = ""
         self._streaming = False
+        self._active = True
+        self._start_live()
+
+    def stop(self) -> None:
+        """End the turn, leaving the final rendered response on screen."""
+        self._active = False
+        self._stop_live()
+        self._streaming = False
+
+    @contextmanager
+    def paused(self) -> Iterator[None]:
+        """Suspend live rendering so the terminal can take direct user input.
+
+        Text streamed so far stays on screen; a bare spinner is erased.
+        Rendering resumes with a fresh thinking indicator afterwards.
+        """
+        if self._live is None:
+            yield
+            return
+        # Only erase the region if it holds nothing but the spinner.
+        self._live.transient = not self._streaming
+        self._stop_live()
+        self._buffer = ""
+        self._streaming = False
+        try:
+            yield
+        finally:
+            if self._active:
+                self._start_live()
+
+    def _start_live(self) -> None:
         self._live = Live(
             ThinkingIndicator(),
             console=self._console,
@@ -58,20 +93,19 @@ class RichStreamingCallbackHandler:
         )
         self._live.start()
 
-    def stop(self) -> None:
+    def _stop_live(self) -> None:
         if self._live is not None:
             self._live.stop()
             self._live = None
-            self._streaming = False
 
     def __call__(self, **kwargs: Any) -> None:
         data = kwargs.get("data", "")
-        if not data or self._live is None:
+        if not data or not self._active:
             return
         self._buffer += data
         self._streaming = True
-        self._live.update(Markdown(self._buffer))
-
+        if self._live is not None:
+            self._live.update(Markdown(self._buffer))
 
 def render_banner(console: Console) -> None:
     model_id = CONSIGLIERE_MODEL.config.get("model_id", "unknown")

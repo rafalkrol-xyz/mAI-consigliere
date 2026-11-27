@@ -17,6 +17,7 @@ from agents.github.config import (
     GITHUB_ASSISTANT_SYSTEM_PROMPT,
     GITHUB_MUTATING_TOOLS,
 )
+from agents.user_input import ask_user
 
 
 def _get_mcp_client() -> MCPClient:
@@ -74,7 +75,7 @@ def github_assistant(query: str) -> str:
                         tool_input = json.dumps(
                             interrupt.reason.get("input", {}), indent=2
                         )
-                        user_input = input(
+                        user_input = ask_user(
                             f"\n⚠️  GitHub write operation requested:\n"
                             f"  Tool : {tool_name}\n"
                             f"  Input: {tool_input}\n"

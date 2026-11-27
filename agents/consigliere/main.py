@@ -12,6 +12,7 @@ from agents.consigliere.config import CONSIGLIERE_AGENT_PROMPT, CONSIGLIERE_MODE
 from agents.github import github_assistant
 from agents.jira import jira_assistant
 from agents.korean import korean_assistant
+from agents.user_input import set_input_guard
 
 
 def create_consigliere(callback_handler: Any = None) -> Agent:
@@ -32,6 +33,7 @@ def run_app() -> None:
     """Run the interactive mAI Consigliere application loop."""
     console = Console()
     handler = RichStreamingCallbackHandler(console)
+    set_input_guard(handler.paused)
     consigliere = create_consigliere(callback_handler=handler)
 
     render_banner(console)
