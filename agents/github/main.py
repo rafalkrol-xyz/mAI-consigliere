@@ -10,7 +10,7 @@ from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
 from strands_tools import handoff_to_user
 
-from agents.hooks import MutationApprovalHook
+from agents.hooks import MutationApprovalHook, PauseDisplayForInputHook
 from agents.github.auth import get_github_token
 from agents.github.config import (
     GITHUB_ASSISTANT_MODEL,
@@ -56,7 +56,10 @@ def github_assistant(query: str) -> str:
                 # MutationApprovalHook: enforcement layer — intercepts every
                 # mutating tool call before execution regardless of whether
                 # the agent called handoff_to_user first.
-                hooks=[MutationApprovalHook(GITHUB_MUTATING_TOOLS)],
+                 hooks=[
+                    MutationApprovalHook(GITHUB_MUTATING_TOOLS),
+                    PauseDisplayForInputHook(frozenset({"handoff_to_user"})),
+                ],
                 callback_handler=None,
             )
 

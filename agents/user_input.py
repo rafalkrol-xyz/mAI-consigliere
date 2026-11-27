@@ -16,6 +16,10 @@ def set_input_guard(guard: InputGuard) -> None:
     global _input_guard
     _input_guard = guard
 
+def input_guard() -> AbstractContextManager[object]:
+    """Return a fresh guard for code that prompts without ask_user()."""
+    return _input_guard()
+
 def ask_user(prompt: str) -> str:
     """Prompt the user on stdin, pausing any registered live display."""
     with _input_guard():
