@@ -10,13 +10,14 @@ from mcp.client.streamable_http import streamable_http_client
 from strands.tools.mcp import MCPClient
 from strands_tools import handoff_to_user
 
-from agents.hooks import MutationApprovalHook
+from agents.hooks import MutationApprovalHook, PauseDisplayForInputHook
 from agents.github.auth import get_github_token
 from agents.github.config import (
     GITHUB_ASSISTANT_MODEL,
     GITHUB_ASSISTANT_SYSTEM_PROMPT,
     GITHUB_MUTATING_TOOLS,
 )
+from agents.user_input import ask_user
 
 
 def _get_mcp_client() -> MCPClient:
@@ -33,13 +34,19 @@ def _get_mcp_client() -> MCPClient:
 @tool
 def github_assistant(query: str) -> str:
     """
-    Answer questions about GitHub project issues for a given repository.
+    Read and manage GitHub repositories: query issues, pull requests, and
+    projects, and perform write operations such as creating, updating,
+    commenting on, or closing issues and pull requests.
+
+    Write operations always require explicit user approval, which this
+    tool collects itself, so delegate write requests here directly.
 
     Args:
-        query: The user's question about the project or its issues
+        query: The user's GitHub request, including the repository
+            (owner/name or URL) and any details needed to fulfil it
 
     Returns:
-        A helpful answer based on the repository's open issues
+        The result of the request, or an explanation if it was declined
     """
     try:
         print("Routed to GitHub Projects Assistant")
@@ -55,7 +62,10 @@ def github_assistant(query: str) -> str:
                 # MutationApprovalHook: enforcement layer — intercepts every
                 # mutating tool call before execution regardless of whether
                 # the agent called handoff_to_user first.
-                hooks=[MutationApprovalHook(GITHUB_MUTATING_TOOLS)],
+                hooks=[
+                    MutationApprovalHook(GITHUB_MUTATING_TOOLS),
+                    PauseDisplayForInputHook(frozenset({"handoff_to_user"})),
+                ],
                 callback_handler=None,
             )
 
@@ -74,7 +84,7 @@ def github_assistant(query: str) -> str:
                         tool_input = json.dumps(
                             interrupt.reason.get("input", {}), indent=2
                         )
-                        user_input = input(
+                        user_input = ask_user(
                             f"\n⚠️  GitHub write operation requested:\n"
                             f"  Tool : {tool_name}\n"
                             f"  Input: {tool_input}\n"

@@ -14,6 +14,7 @@ This document provides essential information for AI coding agents working in thi
 - **Agent Framework**: [Strands Agents](https://strandsagents.com/) (`strands-agents[otel]`) — provides the `Agent` class, `@tool` decorator, MCP client integration, hooks system, and OpenTelemetry support
 - **Agent Tools**: `strands-agents-tools` — pre-built tools (e.g. `file_read`, `file_write`, `editor`, `handoff_to_user`)
 - **LLM Backend**: Amazon Bedrock (via `strands.models.BedrockModel`)
+- **CLI Rendering**: [`rich`](https://rich.readthedocs.io/) — welcome banner, thinking spinner, and streamed Markdown rendering (see `agents/consigliere/cli.py`)
 
 ## Build, Lint & Test Commands
 
@@ -53,6 +54,28 @@ uv run pytest tests/agents/github/test_auth.py
 
 # Run with verbose output and showing print statements
 uv run pytest -sv
+```
+
+### Searching the Codebase
+Use `rg` (ripgrep) instead of `grep` when available — it respects `.gitignore`, skips binary/`.venv` noise by default, and is significantly faster. Fall back to `grep` only if `rg` is not installed.
+
+```bash
+# Search for a symbol across the repo
+rg "MutationApprovalHook"
+
+# Restrict to Python files
+rg -t py "def run_app"
+```
+
+### Running Python one-liners
+Don't invoke a bare `python`/`python3` — it may resolve to a system interpreter outside the project's venv (missing dependencies, wrong version). Use `uv run python -c "..."` instead, which runs inside the project's managed environment.
+
+```bash
+# Correct: runs with project deps + Python 3.14
+uv run python -c "import agents.consigliere.main"
+
+# Avoid: may hit a stray system Python
+python -c "import agents.consigliere.main"
 ```
 
 ### Linting & Formatting
@@ -106,6 +129,7 @@ mAI-consigliere/
 │   ├── hooks.py               # MutationApprovalHook — human-in-the-loop safety hook
 │   ├── consigliere/           # Orchestrator agent package
 │   │   ├── __init__.py
+│   │   ├── cli.py             # Rich streaming callback handler + welcome banner rendering
 │   │   ├── config.py          # Model selection + system prompt for the orchestrator
 │   │   └── main.py            # Orchestrator Agent setup + interactive loop
 │   ├── github/                # GitHub specialist agent package (MCP-backed)
@@ -129,6 +153,8 @@ mAI-consigliere/
 └── tests/                     # Unit tests
     ├── agents/
     │   ├── test_hooks.py      # Tests for shared MutationApprovalHook
+    │   ├── consigliere/
+    │   │   └── test_cli.py    # Tests for RichStreamingCallbackHandler + render_banner
     │   ├── github/
     │   │   └── test_auth.py   # Tests for GitHub auth flow
     │   ├── jira/
@@ -142,6 +168,8 @@ mAI-consigliere/
 
 ### Orchestrator (`agents/consigliere/`)
 The orchestrator is a Strands `Agent` instance managed by the `run_app()` function in `agents/consigliere/main.py`. It holds the strategic system prompt and routes user requests to specialist agents by calling them as tools.
+
+CLI presentation (welcome banner, thinking spinner, streamed Markdown rendering) lives in `agents/consigliere/cli.py`, kept separate from the agent/routing logic in `main.py`. `RichStreamingCallbackHandler` is passed to `create_consigliere()` as the Strands `callback_handler` — it shows a spinner until the first token arrives, then re-renders the growing response buffer as `rich.markdown.Markdown` inside a `rich.live.Live` block on every token.
 
 ### Specialist Agents (`agents/github/`, `agents/jira/`, `agents/korean/`)
 Each specialist is implemented as a **`@tool`-decorated function** in its respective `main.py`. These functions internally create a fresh `Agent` for every invocation. This keeps agents stateless and avoids shared mutable state.

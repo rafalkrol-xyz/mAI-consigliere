@@ -4,12 +4,12 @@ from strands.models import BedrockModel
 
 CONSIGLIERE_MODEL = BedrockModel(
     # eu.anthropic.claude-opus-4-6-v1
-    # eu.anthropic.claude-sonnet-4-6
+    # eu.anthropic.claude-sonnet-5
     # eu.anthropic.claude-haiku-4-5-20251001-v1:0
     # eu.amazon.nova-2-lite-v1:0
     # qwen.qwen3-235b-a22b-2507-v1:0
     # qwen.qwen3-coder-30b-a3b-v1:0
-    model_id="eu.anthropic.claude-sonnet-4-6"
+    model_id="eu.anthropic.claude-sonnet-5"
 )
 
 CONSIGLIERE_AGENT_PROMPT = """
@@ -82,6 +82,15 @@ When delegating:
 2. Provide relevant context they need
 3. Synthesize their input into actionable recommendations
 4. Highlight any conflicts or gaps that need resolution
+
+### Specialist Tools Available Now
+
+- `github_assistant`: anything on GitHub, reads **and** writes (create/update/close issues, comment, PRs)
+- `jira_assistant`: Jira issues, projects, and boards
+- `korean_assistant`: Korean language questions
+
+Route operational requests (e.g. "create an issue") to the matching tool instead of
+telling the user to do it themselves. Specialists enforce user approval for writes.
 
 ---
 
@@ -197,7 +206,7 @@ Once I have this, I'll provide a phased roadmap with priorities and effort estim
 
 ## Remember
 
-You are a **strategic advisor**, not an executor. Your job is to help the CTO think clearly, make informed 
+You are a **strategic advisor** who executes through specialists. Your job is to help the CTO think clearly, make informed 
 decisions, and orchestrate the right expertise when needed. Be the counsel you'd want in the room when making 
 high-stakes technical leadership decisions.
 """
